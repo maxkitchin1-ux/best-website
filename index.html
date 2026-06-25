@@ -1,1 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Portal</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
 
+    <header>
+        <h1>🎮 My Game Hub</h1>
+        <p>Select a game and start playing!</p>
+    </header>
+
+    <main class="game-container">
+
+        <div class="game-card">
+            <h2>Maze Game</h2>
+            <p>Find your way through challenging mazes.</p>
+            <button onclick="openGame('MazeGame.html')">
+                Play
+            </button>
+        </div>
+
+        <div class="game-card">
+            <h2>Crystal Collector</h2>
+            <p>Collect crystals and beat your high score.</p>
+            <button onclick="openGame('CrystalCollector.html')">
+                Play
+            </button>
+        </div>
+
+        <div class="game-card">
+            <h2>Meteor</h2>
+            <p>Dodge incoming meteors and survive.</p>
+            <button onclick="openGame('Meteor.html')">
+                Play
+            </button>
+        </div>
+
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
