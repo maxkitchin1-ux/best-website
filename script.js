@@ -435,3 +435,204 @@ if (window.location.pathname.includes("MazeGame.html")) {
     build(64);
     loop();
 }
+
+
+// ======================
+// METEOR GAME
+// ======================
+if (window.location.pathname.includes("Meteor.html")) {
+
+    const canvas = document.getElementById("game");
+    const ctx = canvas.getContext("2d");
+
+    const hud = document.getElementById("hud");
+    const restartBtn = document.getElementById("restartBtn");
+    const restartIcon = document.getElementById("restartIcon");
+
+    function resize() {
+        canvas.width = innerWidth;
+        canvas.height = innerHeight;
+    }
+
+    addEventListener("resize", resize);
+    resize();
+
+    function urlToBase64(url) {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.crossOrigin = "anonymous";
+
+            img.onload = function () {
+                const c = document.createElement("canvas");
+                c.width = img.width;
+                c.height = img.height;
+
+                const cx = c.getContext("2d");
+                cx.drawImage(img, 0, 0);
+
+                resolve(c.toDataURL("image/png"));
+            };
+
+            img.onerror = reject;
+            img.src = url;
+        });
+    }
+
+    const SOURCES = {
+        restart: "https://upload.wikimedia.org/wikipedia/commons/6/6b/Arrow_refresh_icon.svg"
+    };
+
+    let player, asteroids, score, gameOver;
+    const keys = {};
+
+    let restartImg = new Image();
+
+    function initGame() {
+
+        player = {
+            x: canvas.width / 2,
+            y: canvas.height - 80,
+            size: 22,
+            speed: 7
+        };
+
+        asteroids = [];
+        score = 0;
+        gameOver = false;
+
+        restartBtn.style.display = "none";
+    }
+
+    initGame();
+
+    addEventListener("keydown", e => {
+        keys[e.key.toLowerCase()] = true;
+    });
+
+    addEventListener("keyup", e => {
+        keys[e.key.toLowerCase()] = false;
+    });
+
+    function spawnAsteroid() {
+        asteroids.push({
+            x: Math.random() * canvas.width,
+            y: -40,
+            r: 15 + Math.random() * 30,
+            speed: 2 + Math.random() * 5
+        });
+    }
+
+    setInterval(() => {
+        if (!gameOver) spawnAsteroid();
+    }, 600);
+
+    restartBtn.onclick = initGame;
+
+    function update() {
+
+        if (gameOver) {
+            restartBtn.style.display = "flex";
+            return;
+        }
+
+        if (keys["a"] || keys["arrowleft"])
+            player.x -= player.speed;
+
+        if (keys["d"] || keys["arrowright"])
+            player.x += player.speed;
+
+        player.x = Math.max(
+            player.size,
+            Math.min(canvas.width - player.size, player.x)
+        );
+
+        for (let i = asteroids.length - 1; i >= 0; i--) {
+
+            let a = asteroids[i];
+            a.y += a.speed;
+
+            if (a.y > canvas.height + 50) {
+                asteroids.splice(i, 1);
+                score++;
+            }
+
+            let dist = Math.hypot(
+                player.x - a.x,
+                player.y - a.y
+            );
+
+            if (dist < player.size + a.r) {
+                gameOver = true;
+            }
+        }
+
+        hud.textContent = "Score: " + score;
+    }
+
+    function draw() {
+
+        ctx.fillStyle = "black";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        for (const a of asteroids) {
+
+            ctx.beginPath();
+            ctx.arc(a.x, a.y, a.r, 0, Math.PI * 2);
+            ctx.fillStyle = "gray";
+            ctx.fill();
+        }
+
+        ctx.fillStyle = "cyan";
+
+        ctx.beginPath();
+        ctx.moveTo(player.x, player.y - player.size);
+        ctx.lineTo(player.x - player.size, player.y + player.size);
+        ctx.lineTo(player.x + player.size, player.y + player.size);
+        ctx.closePath();
+        ctx.fill();
+
+        if (gameOver) {
+
+            ctx.fillStyle = "white";
+            ctx.font = "60px Arial";
+            ctx.textAlign = "center";
+
+            ctx.fillText(
+                "Game Over",
+                canvas.width / 2,
+                canvas.height / 2
+            );
+        }
+    }
+
+    function loop() {
+        update();
+        draw();
+        requestAnimationFrame(loop);
+    }
+
+    async function start() {
+
+        hud.textContent = "Loading assets...";
+
+        try {
+
+            const base64 =
+                await urlToBase64(SOURCES.restart);
+
+            restartImg.src = base64;
+            restartIcon.src = base64;
+
+            hud.textContent = "Score: 0";
+
+            loop();
+
+        } catch (e) {
+
+            console.error(e);
+            hud.textContent = "Failed to load assets";
+        }
+    }
+
+    start();
+}
